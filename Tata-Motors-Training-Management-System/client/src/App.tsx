@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Programs from './pages/Programs';
@@ -14,11 +13,10 @@ import EmployeeProfile from './pages/EmployeeProfile';
 import Analytics from './pages/Analytics';
 import Uploads from './pages/Uploads';
 import Settings from './pages/Settings';
-
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter basename="/Tata_Motors_TMS/">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

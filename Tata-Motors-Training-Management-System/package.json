@@ -1,0 +1,12 @@
+{
+  "name": "tata-motors-training-management-portal",
+  "version": "1.0.0",
+  "description": "Internal Training Management Portal for Tata Motors - manages training programs, scheduling, faculty, employees, attendance and analytics.",
+  "private": true,
+  "scripts": {
+    "install:all": "cd server && npm install && cd ../client && npm install",
+    "setup:db": "cd server && npx prisma generate && npx prisma migrate deploy && npm run seed",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev"
+  }
+}

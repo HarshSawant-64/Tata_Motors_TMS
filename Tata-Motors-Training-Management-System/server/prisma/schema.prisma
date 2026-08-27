@@ -1,0 +1,164 @@
+// Prisma schema for Tata Motors Training Management Portal
+// Database: SQLite (local file, suitable for internal/company-network deployment)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id                  Int       @id @default(autoincrement())
+  username            String    @unique
+  passwordHash        String
+  fullName            String
+  role                String    @default("ADMIN") // ADMIN | HR
+  createdAt           DateTime  @default(now())
+  failedLoginAttempts Int       @default(0) // consecutive failed logins; reset on success
+  lockedUntil         DateTime? // set when too many failed attempts trip the lockout
+  auditLogs           AuditLog[]
+}
+
+model Program {
+  id          Int       @id @default(autoincrement())
+  code        String    @unique
+  name        String
+  category    String
+  description String?
+  status      String    // Planned | Completed | Cancelled | Postponed
+  startDate   DateTime
+  endDate     DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  sessions    Session[]
+  uploads     Upload[]
+}
+
+model Session {
+  id                     Int       @id @default(autoincrement())
+  programId              Int
+  program                Program   @relation(fields: [programId], references: [id], onDelete: Cascade)
+  date                   DateTime
+  endDate                DateTime?
+  startTime              String?
+  endTime                String?
+  facultyId              Int?
+  faculty                Faculty?  @relation(fields: [facultyId], references: [id])
+  hall                   String?
+  trainingTopic          String?
+  studentCount            Int       @default(0)
+  presentCount           Int       @default(0)
+  absentCount            Int       @default(0)
+  onlineCount            Int       @default(0)
+  status                 String    @default("Planned")
+  attendanceDocument     String?
+  managementAttendanceDoc String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  uploads                Upload[]
+  attendanceRecords      AttendanceRecord[]
+}
+
+model Faculty {
+  id         Int       @id @default(autoincrement())
+  facultyCode String   @unique
+  name       String
+  department String?
+  grade      String?
+  status     String    @default("Active")
+  attendance String?
+  rawData    String?   // JSON string preserving unmapped columns from Excel import
+  createdAt  DateTime  @default(now())
+  sessions   Session[]
+}
+
+model Employee {
+  id           Int      @id @default(autoincrement())
+  employeeId   String   @unique
+  name         String
+  department   String?
+  category     String?
+  grade        String?
+  rawData      String?  // JSON string preserving unmapped columns from Excel import
+  createdAt    DateTime @default(now())
+  attendance   AttendanceRecord[]
+  // Tracks which Excel import (Upload record) most recently created/updated
+  // this employee. Null for employees added manually via the "Add Employee"
+  // form. When the source Upload record is deleted, the employees that came
+  // from it are removed too (see routes/uploads.js), keeping the Employee
+  // tab in sync with the uploaded Excel data instead of leaving stale rows.
+  uploadId     Int?
+  upload       Upload?  @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+}
+
+// Master list of manually-added training names, scoped per main calendar
+// program (SHE / Induction / F&T / C&B — see CALENDAR_MAIN_PROGRAMS in the
+// client). Lets a user record a brand-new training that isn't yet in the
+// built-in catalog (client/src/constants.ts) directly from Scheduling, and
+// have it persist and stay available for future scheduling.
+model Training {
+  id          Int      @id @default(autoincrement())
+  mainProgram String
+  name        String
+  createdAt   DateTime @default(now())
+
+  @@unique([mainProgram, name])
+}
+
+// Manually-added main programs for the Scheduling calendar "Create Program"
+// flow, on top of the four built-in ones (SHE / Induction / F&T / C&B —
+// see CALENDAR_MAIN_PROGRAMS in the client). Lets a user record a brand-new
+// main program directly from Scheduling and have it persist and appear in
+// the Main Program selector immediately and on future visits. `value` is
+// what gets stored as the Program.category for sessions created under it;
+// `label` is only what is displayed in the calendar dropdown.
+model MainProgram {
+  id        Int      @id @default(autoincrement())
+  value     String   @unique
+  label     String
+  createdAt DateTime @default(now())
+}
+
+model Upload {
+  id           Int      @id @default(autoincrement())
+  originalName String
+  storedName   String
+  fileType     String
+  fileSize     Int
+  category     String   // faculty | employee | attendance | document | photo
+  programId    Int?
+  program      Program? @relation(fields: [programId], references: [id])
+  sessionId    Int?
+  session      Session? @relation(fields: [sessionId], references: [id])
+  detectedColumns String? // JSON array of detected column names (for excel/csv)
+  rowCount     Int?
+  previewData  String?  // JSON preview rows
+  uploadedAt   DateTime @default(now())
+  employees    Employee[] // employees imported/updated by this Excel upload (category "employee")
+}
+
+model AttendanceRecord {
+  id          Int      @id @default(autoincrement())
+  sessionId   Int
+  session     Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  employeeId  Int?
+  employee    Employee? @relation(fields: [employeeId], references: [id])
+  name        String?
+  department  String?
+  status      String   // Present | Absent | Online
+  rawData     String?
+  createdAt   DateTime @default(now())
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+}

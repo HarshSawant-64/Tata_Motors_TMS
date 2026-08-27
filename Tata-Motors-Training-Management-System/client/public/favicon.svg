@@ -1,0 +1,16 @@
+<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Company logo placeholder">
+  <!--
+    Placeholder brand mark for the Training Management Portal.
+    This is a generic, original abstract monogram — NOT the real Tata
+    Motors corporate logo, which is trademarked brand IP and shouldn't be
+    reproduced here. Swap this file for your organization's official
+    logo asset (same file name/dimensions) before production use.
+  -->
+  <rect x="1" y="1" width="38" height="38" rx="8" fill="#0a2647" />
+  <rect x="1" y="1" width="38" height="38" rx="8" fill="none" stroke="#3aa0ff" stroke-width="1.5" />
+  <path
+    d="M9 26 L9 14 L14 14 C16.8 14 18.5 15.6 18.5 18 C18.5 20.4 16.8 22 14 22 L11.6 22 L11.6 26 Z M11.6 16.2 L11.6 19.8 L13.8 19.8 C15.1 19.8 15.9 19.1 15.9 18 C15.9 16.9 15.1 16.2 13.8 16.2 Z"
+    fill="#f5f8fc"
+  />
+  <path d="M20.5 26 L20.5 14 L28.5 14 L28.5 16.2 L23.1 16.2 L23.1 18.8 L27.8 18.8 L27.8 21 L23.1 21 L23.1 23.8 L28.7 23.8 L28.7 26 Z" fill="#3aa0ff" />
+</svg>

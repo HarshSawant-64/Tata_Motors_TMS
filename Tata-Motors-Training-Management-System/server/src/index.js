@@ -4,7 +4,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
-
 const { apiLimiter } = require('./middleware/rateLimit');
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
@@ -30,10 +29,30 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 
+// Allow multiple origins: your local dev URL AND your deployed GitHub Pages site.
+// You can also set CLIENT_ORIGIN as a comma-separated env var on Render instead
+// of hardcoding here.
+const allowedOrigins = (process.env.CLIENT_ORIGIN
+  ? process.env.CLIENT_ORIGIN.split(',')
+  : [
+      'http://192.168.31.198:5173',
+      'http://localhost:5173',
+      'https://harshsawant-64.github.io',
+    ]
+).map(o => o.trim());
+
 app.use(cors({
-    origin: process.env.CLIENT_ORIGIN || 'http://192.168.31.198:5173',
+    origin: function (origin, callback) {
+      // allow requests with no origin (like curl, mobile apps, server-to-server)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error('Not allowed by CORS: ' + origin));
+    },
     credentials: true
 }));
+
 app.use(cookieParser());
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -75,6 +94,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Unexpected server error. Please try again or contact support.' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Tata Motors Training Management Portal API running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Tata Motors Training Management Portal API running on port ${PORT}`);
 });
